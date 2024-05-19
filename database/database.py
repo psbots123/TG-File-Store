@@ -2,10 +2,10 @@ import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
-
+DATABASE_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 # Initialize MongoDB Client
 client = AsyncIOMotorClient(DATABASE_URL)
-db = client["mydatabase"]  # Replace "mydatabase" with your database name
+db = client["DATABASE_NAME"]  # Replace "mydatabase" with your database name
 collection = db["database"]
 
 # Define your database model as a dictionary

@@ -10,7 +10,7 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 import base64
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from pyrogram.errors import ListenerCanceled
+#from pyrogram.errors import ListenerCanceled
 from database.database import *
 from config import *
 
@@ -166,8 +166,8 @@ async def batch(c, m):
                 if media.text == "/cancel":
                     return await m.reply_text('Cancelled Successfully ✌')
                 files.append(media)
-            except ListenerCanceled:
-                pass
+            #except ListenerCanceled:
+                #pass
             except Exception as e:
                 print(e)
                 await m.reply_text(text="Something went wrong. Try again later.")

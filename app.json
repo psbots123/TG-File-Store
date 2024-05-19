@@ -16,6 +16,15 @@
       "description": "Setting this to ANYTHING will enable webhooks when in env mode",
       "value": "ANYTHING"
     },
+    "DATABASE_NAME": {
+      "description":"mongodb database name",
+      "value": "Cluster0"
+    },
+    "DATABASE_URL": {
+      "description": "Mongodb uri",
+      "value":"",
+      "required": "true"
+    },
     "BOT_TOKEN": {
       "description": "Your bot token, as a string.",
       "value": ""

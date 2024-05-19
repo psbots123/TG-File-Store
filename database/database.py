@@ -1,58 +1,33 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
-
 import os
-import threading
-import asyncio
-
-from sqlalchemy import Column, Integer, Boolean, String, ForeignKey, UniqueConstraint, func
+from motor.motor_asyncio import AsyncIOMotorClient
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
-def start() -> scoped_session:
-    engine = create_engine(DATABASE_URL, client_encoding="utf8")
-    BASE.metadata.bind = engine
-    BASE.metadata.create_all(engine)
-    return scoped_session(sessionmaker(bind=engine, autoflush=False))
+# Initialize MongoDB Client
+client = AsyncIOMotorClient(DATABASE_URL)
+db = client["mydatabase"]  # Replace "mydatabase" with your database name
+collection = db["database"]
 
-BASE = declarative_base()
-SESSION = start()
-
-INSERTION_LOCK = threading.RLock()
-
-class Database(BASE):
-    __tablename__ = "database"
-    id = Column(String, primary_key=True)
-    up_name = Column(Boolean)
-
+# Define your database model as a dictionary
+class Database:
     def __init__(self, id, up_name):
         self.id = str(id)
         self.up_name = up_name
 
-Database.__table__.create(checkfirst=True)
-
+# Function to update or insert data
 async def update_as_name(id, mode):
-    with INSERTION_LOCK:
-        msg = SESSION.query(Database).get(str(id))
-        if not msg:
-            msg = Database(str(id), False)
-        else:
-            msg.up_name = mode
-            SESSION.delete(msg)
-        SESSION.add(msg)
-        SESSION.commit()
+    result = await collection.find_one({"_id": id})
+    if result:
+        await collection.update_one({"_id": id}, {"$set": {"up_name": mode}})
+    else:
+        new_data = {"_id": id, "up_name": mode}
+        await collection.insert_one(new_data)
 
+# Function to get data
 async def get_data(id):
-    try:
-        user_data = SESSION.query(Database).get(str(id))
-        if not user_data:
-            new_user = Database(str(id), False)
-            SESSION.add(new_user)
-            SESSION.commit()
-            user_data = SESSION.query(Database).get(str(id))
-        return user_data
-    finally:
-        SESSION.close()
-
-
+    user_data = await collection.find_one({"_id": id})
+    if not user_data:
+        new_user = {"_id": id, "up_name": False}
+        await collection.insert_one(new_user)
+        user_data = await collection.find_one({"_id": id})
+    return user_data
